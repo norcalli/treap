@@ -45,8 +45,6 @@ type Pair struct {
 
 // A Node in the Tree.
 type Node struct {
-	// key      KeyType
-	// item     ItemType
 	Pair
 	priority int
 	left     *Node
