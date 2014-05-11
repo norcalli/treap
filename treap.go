@@ -32,25 +32,31 @@ type LessFunc func(a, b interface{}) bool
 // OverlapFunc return true if a overlaps b.  Optional.  Only used by overlap trees.
 type OverlapFunc func(a, b interface{}) bool
 
-// Key can be anything.  It will use LessFunc to compare keys.
-type Key interface{}
+// KeyType can be anything.  It will use LessFunc to compare keys.
+type KeyType interface{}
 
-// Item can be anything.
-type Item interface{}
+// ItemType can be anything.
+type ItemType interface{}
+
+type Pair struct {
+	Key  KeyType
+	Item ItemType
+}
 
 // A Node in the Tree.
 type Node struct {
-	key      Key
-	item     Item
+	// key      KeyType
+	// item     ItemType
+	Pair
 	priority int
 	left     *Node
 	right    *Node
 }
 
-func newNode(key Key, item Item, priority int) *Node {
+func newNode(key KeyType, item ItemType, priority int) *Node {
 	result := new(Node)
-	result.key = key
-	result.item = item
+	result.Key = key
+	result.Item = item
 	result.priority = priority
 	return result
 }
@@ -83,61 +89,61 @@ func (t *Tree) Len() int {
 	return t.count
 }
 
-// Get an Item in the tree.
-func (t *Tree) Get(key Key) Item {
+// Get an ItemType in the tree.
+func (t *Tree) Get(key KeyType) ItemType {
 	return t.get(t.root, key)
 }
 
-func (t *Tree) get(node *Node, key Key) Item {
+func (t *Tree) get(node *Node, key KeyType) ItemType {
 	if node == nil {
 		return nil
 	}
-	if t.less(key, node.key) {
+	if t.less(key, node.Key) {
 		return t.get(node.left, key)
 	}
-	if t.less(node.key, key) {
+	if t.less(node.Key, key) {
 		return t.get(node.right, key)
 	}
-	return node.item
+	return node.Item
 }
 
 // Returns true if there is an item in the tree with this key.
-func (t *Tree) Exists(key Key) bool {
+func (t *Tree) Exists(key KeyType) bool {
 	return t.exists(t.root, key)
 }
 
-func (t *Tree) exists(node *Node, key Key) bool {
+func (t *Tree) exists(node *Node, key KeyType) bool {
 	if node == nil {
 		return false
 	}
-	if t.less(key, node.key) {
+	if t.less(key, node.Key) {
 		return t.exists(node.left, key)
 	}
-	if t.less(node.key, key) {
+	if t.less(node.Key, key) {
 		return t.exists(node.right, key)
 	}
 	return true
 }
 
 // Insert an item into the tree.
-func (t *Tree) Insert(key Key, item Item) {
+func (t *Tree) Insert(key KeyType, item ItemType) {
 	priority := rand.Int()
 	t.root = t.insert(t.root, key, item, priority)
 }
 
-func (t *Tree) insert(node *Node, key Key, item Item, priority int) *Node {
+func (t *Tree) insert(node *Node, key KeyType, item ItemType, priority int) *Node {
 	if node == nil {
 		t.count++
 		return newNode(key, item, priority)
 	}
-	if t.less(key, node.key) {
+	if t.less(key, node.Key) {
 		node.left = t.insert(node.left, key, item, priority)
 		if node.left.priority < node.priority {
 			return t.leftRotate(node)
 		}
 		return node
 	}
-	if t.less(node.key, key) {
+	if t.less(node.Key, key) {
 		node.right = t.insert(node.right, key, item, priority)
 		if node.right.priority < node.priority {
 			return t.rightRotate(node)
@@ -146,7 +152,7 @@ func (t *Tree) insert(node *Node, key Key, item Item, priority int) *Node {
 	}
 
 	// equal: replace the value
-	node.item = item
+	node.Item = item
 	return node
 }
 
@@ -167,7 +173,7 @@ func (t *Tree) rightRotate(node *Node) *Node {
 }
 
 // Split the tree by creating a tree with a node of priority -1 so it will be the root
-func (t *Tree) Split(key Key) (*Node, *Node) {
+func (t *Tree) Split(key KeyType) (*Node, *Node) {
 	inserted := t.insert(t.root, key, nil, -1)
 	return inserted.left, inserted.right
 }
@@ -194,25 +200,25 @@ func (t *Tree) Merge(left, right *Node) *Node {
 }
 
 // Delete the item from the tree that has this key.
-func (t *Tree) Delete(key Key) {
+func (t *Tree) Delete(key KeyType) {
 	if t.Exists(key) == false {
 		return
 	}
 	t.root = t.delete(t.root, key)
 }
 
-func (t *Tree) delete(node *Node, key Key) *Node {
+func (t *Tree) delete(node *Node, key KeyType) *Node {
 	if node == nil {
 		panic("key not found")
 	}
 
-	if t.less(key, node.key) {
+	if t.less(key, node.Key) {
 		result := node
 		x := node.left
 		result.left = t.delete(x, key)
 		return result
 	}
-	if t.less(node.key, key) {
+	if t.less(node.Key, key) {
 		result := node
 		x := node.right
 		result.right = t.delete(x, key)
@@ -223,19 +229,19 @@ func (t *Tree) delete(node *Node, key Key) *Node {
 }
 
 // Returns the height (depth) of the tree.
-func (t *Tree) Height(key Key) int {
+func (t *Tree) Height(key KeyType) int {
 	return t.height(t.root, key)
 }
 
-func (t *Tree) height(node *Node, key Key) int {
+func (t *Tree) height(node *Node, key KeyType) int {
 	if node == nil {
 		return 0
 	}
-	if t.less(key, node.key) {
+	if t.less(key, node.Key) {
 		depth := t.height(node.left, key)
 		return depth + 1
 	}
-	if t.less(node.key, key) {
+	if t.less(node.Key, key) {
 		depth := t.height(node.right, key)
 		return depth + 1
 	}
@@ -243,8 +249,8 @@ func (t *Tree) height(node *Node, key Key) int {
 }
 
 // Returns a channel of Items whose keys are in ascending order.
-func (t *Tree) IterAscend() <-chan Item {
-	c := make(chan Item)
+func (t *Tree) IterAscend() <-chan ItemType {
+	c := make(chan ItemType)
 	go func() {
 		iterateInOrder(t.root, c)
 		close(c)
@@ -252,18 +258,18 @@ func (t *Tree) IterAscend() <-chan Item {
 	return c
 }
 
-func iterateInOrder(h *Node, c chan<- Item) {
+func iterateInOrder(h *Node, c chan<- ItemType) {
 	if h == nil {
 		return
 	}
 	iterateInOrder(h.left, c)
-	c <- h.item
+	c <- h.Item
 	iterateInOrder(h.right, c)
 }
 
 // Returns a channel of keys in ascending order.
-func (t *Tree) IterKeysAscend() <-chan Key {
-	c := make(chan Key)
+func (t *Tree) IterKeysAscend() <-chan KeyType {
+	c := make(chan KeyType)
 	go func() {
 		iterateKeysInOrder(t.root, c)
 		close(c)
@@ -271,18 +277,37 @@ func (t *Tree) IterKeysAscend() <-chan Key {
 	return c
 }
 
-func iterateKeysInOrder(h *Node, c chan<- Key) {
+func iterateKeysInOrder(h *Node, c chan<- KeyType) {
 	if h == nil {
 		return
 	}
 	iterateKeysInOrder(h.left, c)
-	c <- h.key
+	c <- h.Key
 	iterateKeysInOrder(h.right, c)
 }
 
+// Returns a channel of keys in ascending order.
+func (t *Tree) IterPairsAscend() <-chan Pair {
+	c := make(chan Pair)
+	go func() {
+		iteratePairsInOrder(t.root, c)
+		close(c)
+	}()
+	return c
+}
+
+func iteratePairsInOrder(h *Node, c chan<- Pair) {
+	if h == nil {
+		return
+	}
+	iteratePairsInOrder(h.left, c)
+	c <- h.Pair
+	iteratePairsInOrder(h.right, c)
+}
+
 // Returns a channel of items that overlap key.
-func (t *Tree) IterateOverlap(key Key) <-chan Item {
-	c := make(chan Item)
+func (t *Tree) IterateOverlap(key KeyType) <-chan ItemType {
+	c := make(chan ItemType)
 	go func() {
 		if t.overlap != nil {
 			t.iterateOverlap(t.root, key, c)
@@ -292,18 +317,18 @@ func (t *Tree) IterateOverlap(key Key) <-chan Item {
 	return c
 }
 
-func (t *Tree) iterateOverlap(h *Node, key Key, c chan<- Item) {
+func (t *Tree) iterateOverlap(h *Node, key KeyType, c chan<- ItemType) {
 	if h == nil {
 		return
 	}
-	lessThanLower := t.overlap(h.key, key)
-	greaterThanUpper := t.overlap(key, h.key)
+	lessThanLower := t.overlap(h.Key, key)
+	greaterThanUpper := t.overlap(key, h.Key)
 
 	if !lessThanLower {
 		t.iterateOverlap(h.left, key, c)
 	}
 	if !lessThanLower && !greaterThanUpper {
-		c <- h.item
+		c <- h.Item
 	}
 	if !greaterThanUpper {
 		t.iterateOverlap(h.right, key, c)
@@ -311,31 +336,31 @@ func (t *Tree) iterateOverlap(h *Node, key Key, c chan<- Item) {
 }
 
 // Returns the minimum item in the tree.
-func (t *Tree) Min() Item {
+func (t *Tree) Min() ItemType {
 	return min(t.root)
 }
 
-func min(h *Node) Item {
+func min(h *Node) ItemType {
 	if h == nil {
 		return nil
 	}
 	if h.left == nil {
-		return h.item
+		return h.Item
 	}
 	return min(h.left)
 }
 
 // Returns the maximum item in the tree.
-func (t *Tree) Max() Item {
+func (t *Tree) Max() ItemType {
 	return max(t.root)
 }
 
-func max(h *Node) Item {
+func max(h *Node) ItemType {
 	if h == nil {
 		return nil
 	}
 	if h.right == nil {
-		return h.item
+		return h.Item
 	}
 	return max(h.right)
 }
