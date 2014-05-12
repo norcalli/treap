@@ -18,6 +18,9 @@ func StringLess(p, q interface{}) bool {
 func IntLess(p, q interface{}) bool {
 	return p.(int) < q.(int)
 }
+func FloatLess(p, q interface{}) bool {
+	return p.(float64) < q.(float64)
+}
 
 func TestEmpty(t *testing.T) {
 	tree := NewTree(StringLess)
@@ -77,6 +80,44 @@ func TestBalance(t *testing.T) {
 		fmt.Printf("%d: height = %d\n", i, tree.Height(i))
 	}
 }
+
+func TestMinThreshold(t *testing.T) {
+	tree := NewTree(FloatLess)
+	fmt.Println(tree)
+	for i := 0; i < 1000; i++ {
+		tree.Insert(float64(i), false)
+	}
+	for i := 0; i < 1000; i += 50 {
+		test, expect := float64(i)+0.1, float64(i)
+		t.Log(test)
+		p := tree.MinThreshold(test)
+		if p.Key.(float64) < expect {
+			t.Errorf("Expected %v, got %v", expect, p.Key)
+		}
+	}
+	p := tree.MinThreshold(999.9)
+	if p.Key.(float64) != 999 {
+		t.Errorf("Expected %v, got %v", 999, p.Key)
+	}
+}
+
+// func TestClosest(t *testing.T) {
+// 	tree := NewTree(IntLess)
+// 	fmt.Println(tree)
+// 	for i := 0; i < 1000; i++ {
+// 		tree.Insert(i, false)
+// 	}
+// 	for i := 0; i < 1000; i += 50 {
+// 		p := tree.MinThreshold(i)
+// 		if p.Key.(int) != i {
+// 			t.Errorf("Expected %d, got %d", i, p.Key)
+// 		}
+// 	}
+// 	p := tree.MinThreshold(999)
+// 	if p.Key.(int) != 999 {
+// 		t.Errorf("Expected %d, got %d", 999, p.Key)
+// 	}
+// }
 
 // tests copied from petar's llrb
 func TestCases(t *testing.T) {

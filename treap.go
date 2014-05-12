@@ -348,6 +348,49 @@ func min(h *Node) ItemType {
 	return min(h.left)
 }
 
+// Returns the minimum item in the tree.
+func (t *Tree) MinThreshold(threshold KeyType) Pair {
+	return t.minThreshold(t.root, threshold)
+}
+
+func (t *Tree) minThreshold(h *Node, threshold KeyType) Pair {
+	if t.less(threshold, h.Key) {
+		if h.left == nil {
+			return h.Pair
+		}
+		return t.minThreshold(h.left, threshold)
+	}
+	if t.less(h.Key, threshold) {
+		if h.right == nil {
+			return h.Pair
+		}
+		return t.minThreshold(h.right, threshold)
+	}
+	return h.Pair
+	// if h.right == nil {
+	// 	return h.Pair
+	// }
+	// return t.minThreshold(h.right, threshold)
+}
+
+// // Returns the minimum item in the tree.
+// func (t *Tree) Closest(threshold KeyType) Pair {
+// 	p := &t.root.Pair
+// 	t.closest(t.root, threshold, p)
+// 	return *p
+// }
+
+// func (t *Tree) closest(h *Node, threshold KeyType, p *Pair) {
+
+// 	if h.right == nil {
+// 		return h.Pair
+// 	}
+// 	if t.less(h.Key, threshold) {
+// 		return h.Pair
+// 	}
+// 	t.closest(h.right, threshold)
+// }
+
 // Returns the maximum item in the tree.
 func (t *Tree) Max() ItemType {
 	return max(t.root)
